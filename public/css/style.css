@@ -1,13 +1,13 @@
 /* In: public/css/style.css */
 
 :root {
-    --color-primary: #2d6a6d;
-    --color-light-bg: #f8f7f5;
-    --color-dark-text: #3c3c3c;
-    --color-light-text: #ffffff;
-    --font-serif: "Lora", serif;
-    --font-sans: "Poppins", sans-serif;
-    --border-color: #e5e3e0;
+  --color-primary: #2d6a6d;
+  --color-light-bg: #f8f7f5;
+  --color-dark-text: #3c3c3c;
+  --color-light-text: #ffffff;
+  --font-serif: "Lora", serif;
+  --font-sans: "Poppins", sans-serif;
+  --border-color: #e5e3e0;
 }
 
 /* Base and Public Page Styles */
@@ -70,27 +70,35 @@ body:not(.on-home-page) .nav-links a.active { text-decoration: underline; }
 .social-icon { border: 1px solid #ccc; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; border-radius: 50%; transition: background-color 0.2s; }
 .social-icon:hover { background-color: #f0f0f0; } .social-icon img { height: 18px; width: 18px; }
 
-/* --- THE FIRST FIX IS HERE --- */
 @media (min-width: 768px) { 
-    /* This rule now ONLY targets the explore button, not all buttons */
-    .nav .explore-btn { display: inline-block; } 
-    .hamburger-menu { display: none; } 
-    .feature { grid-template-columns: 1fr 1fr; gap: 5rem; } 
-    .feature-image img { height: 450px; } 
-    .footer .container { flex-direction: row; justify-content: space-between; } 
-    #memorials .feature:nth-child(odd) .feature-image { order: 1; } 
+  .nav .explore-btn { display: inline-block; } 
+  .hamburger-menu { display: none; } 
+  .feature { grid-template-columns: 1fr 1fr; gap: 5rem; } 
+  .feature-image img { height: 450px; } 
+  .footer .container { flex-direction: row; justify-content: space-between; } 
+  #memorials .feature:nth-child(odd) .feature-image { order: 1; }
+
+  /* --- THE FIX IS HERE --- */
+  /* This rule targets the h2 on specific pages and reduces the top margin */
+  #gallery h2,
+  #memorials h2,
+  #calendar h2,
+  #map h2.map-header,
+  #about h2 {
+      margin-top: 15%; /* Reduced by 50% from the original 30% */
+  }
 }
 
 @media (min-width: 992px) { .nav-links { display: flex; } }
+
 @media (max-width: 767px) { 
-    .container { padding: 0 15px; } 
-    section, .page > section { padding: 60px 0; } 
-    /* Hide all desktop buttons on mobile */
-    .nav .explore-btn, .nav .logout-btn { display: none; }
-    .memorial-section, .about-section, .map-section { padding-top: 60px; } 
-    #home .memorial-section { padding: 60px 0; } 
-    #home .map-section { padding-top: 0; } 
-    body:not(.on-home-page) .header, .header.scrolled { padding: 15px 0; } 
+  .container { padding: 0 15px; } 
+  section, .page > section { padding: 60px 0; } 
+  .nav .explore-btn, .nav .logout-btn { display: none; }
+  .memorial-section, .about-section, .map-section { padding-top: 60px; } 
+  #home .memorial-section { padding: 60px 0; } 
+  #home .map-section { padding-top: 0; } 
+  body:not(.on-home-page) .header, .header.scrolled { padding: 15px 0; } 
 }
 
 /* --- ADMIN DASHBOARD STYLES --- */
@@ -173,36 +181,36 @@ textarea.text-input { min-height: 80px; resize: vertical; }
 .suggestions-list { list-style: disc; padding-left: 20px; margin-top: 1rem; }
 .suggestions-list li { margin-bottom: 0.5rem; font-size: 0.95rem; }
 
-/* --- THE SECOND FIX IS HERE: More specific authentication styles --- */
+/* --- AUTHENTICATION STATE STYLES --- */
 
 /* By default (logged out state): */
 .nav-links .dashboard-link,
 .nav .logout-btn {
-  display: none !important; /* Use !important to guarantee it wins */
+display: none !important;
 }
 
 /* When body.logged-in is present: */
 body.logged-in .nav-links .login-link {
-  display: none !important;
+display: none !important;
 }
 body.logged-in .nav-links .dashboard-link {
-  display: block !important;
+display: block !important;
 }
 body.logged-in .nav .logout-btn {
-  display: inline-block !important;
+display: inline-block !important;
 }
 
 /* When on the admin page specifically (and logged in): */
 body.on-admin-page .header {
-  position: fixed;
-  background-color: var(--color-primary);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+position: fixed;
+background-color: var(--color-primary);
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 body.on-admin-page .header .nav-links,
 body.on-admin-page .header .hamburger-menu,
 body.on-admin-page .header .explore-btn {
-  display: none !important;
+display: none !important;
 }
 body.on-admin-page .header .logout-btn {
-  display: inline-block !important;
+display: inline-block !important;
 }
