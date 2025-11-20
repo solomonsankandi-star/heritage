@@ -7,8 +7,6 @@ const { ApolloServer } = require('apollo-server-express');
 const path = require('path');
 const { graphqlUploadExpress } = require('graphql-upload');
 
-// NOTE: WebSocket-related imports ('http', 'ws', 'uuid') have been removed.
-
 const upload = require('./config/multer-config');
 const typeDefs = require('./graphql/typeDefs');
 const resolvers = require('./graphql/resolvers');
@@ -16,8 +14,7 @@ const viewRoutes = require('./routes/viewRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// NOTE: Global maps for clients and scanSessions have been removed.
+const HOST = '0.0.0.0';
 
 // Middleware & Setup
 app.use(express.json());
@@ -33,41 +30,44 @@ app.post('/upload', upload.single('eventImage'), (req, res) => {
     res.status(200).json({ imageUrl: `/uploads/${req.file.filename}` });
 });
 
-// This route remains, as it's the destination for the QR code
-app.get('/town/:townName', (req, res) => {
-  res.render('town', { townName: req.params.townName });
-});
 
-// NOTE: The '/scan/confirm/:scanId' route has been removed.
+// --- Static routes, one for each town page ---
+app.get('/town/Windhoek', (req, res) => { res.render('pages/towns/windhoek'); });
+app.get('/town/Swakopmund', (req, res) => { res.render('pages/towns/swakopmund'); });
+app.get('/town/Walvis-Bay', (req, res) => { res.render('pages/towns/walvisbay'); });
+app.get('/town/Oshakati', (req, res) => { res.render('pages/towns/oshakati'); });
+app.get('/town/Rundu', (req, res) => { res.render('pages/towns/rundu'); });
+app.get('/town/Keetmanshoop', (req, res) => { res.render('pages/towns/keetmanshoop'); });
+app.get('/town/Tsumeb', (req, res) => { res.render('pages/towns/tsumeb'); });
+app.get('/town/Luderitz', (req, res) => { res.render('pages/towns/luderitz'); });
+app.get('/town/Gobabis', (req, res) => { res.render('pages/towns/gobabis'); });
+app.get('/town/Katima-Mulilo', (req, res) => { res.render('pages/towns/katimamulilo'); });
+
 
 app.use('/', viewRoutes);
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected Successfully.'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
-
-// Apollo Server (GraphQL)
-async function startApolloServer() {
-  const server = new ApolloServer({
+// MongoDB Connection and Server Start
+async function startServer() {
+  const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
-    // NOTE: Context no longer needs scanSessions
   });
 
-  await server.start();
+  await apolloServer.start();
   app.use(graphqlUploadExpress());
-  server.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app });
 
-  // --- THE ONLY CODE CHANGE IS HERE ---
-  // We tell the server to listen on host 0.0.0.0 and the port provided by Fly.io.
-  const HOST = '0.0.0.0';
-
-  // NOTE: We are back to using app.listen() directly, no http server wrapper needed.
   app.listen({ port: PORT, host: HOST }, () => {
-    console.log(`Server running on http://${HOST}:${PORT}`);
-    console.log(`GraphQL endpoint at http://localhost:${PORT}${server.graphqlPath}`);
+    console.log(`Server ready at http://${HOST}:${PORT}`);
+    console.log(`GraphQL endpoint at http://localhost:${PORT}${apolloServer.graphqlPath}`);
   });
 }
 
-startApolloServer();
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('MongoDB Connected Successfully.');
+    startServer();
+  })
+  .catch(err => {
+    console.error('FATAL: MongoDB Connection Error:', err);
+  });
