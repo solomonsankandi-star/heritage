@@ -74,37 +74,45 @@ async function initializeInteractiveMap(containerId) {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     
-    if (containerId === 'leaflet-map') {
-        const mapPageContainer = document.querySelector('#map .map-section .container');
-        const helperContainer = document.createElement('div');
-        helperContainer.id = 'connectivity-helper-container';
-        mapPageContainer.insertBefore(helperContainer, mapContainer.parentNode);
+    // --- THE FIX IS HERE ---
+    // This condition now includes BOTH the main map page ('leaflet-map') 
+    // AND the home page map ('leaflet-map-home').
+    if (containerId === 'leaflet-map' || containerId === 'leaflet-map-home') {
+        
+        // We only show the Wi-Fi helper on the main map page to keep the home page clean.
+        if (containerId === 'leaflet-map') {
+            const mapPageContainer = document.querySelector('#map .map-section .container');
+            const helperContainer = document.createElement('div');
+            helperContainer.id = 'connectivity-helper-container';
+            mapPageContainer.insertBefore(helperContainer, mapContainer.parentNode);
 
-        async function renderWifiHelper() {
-            try {
-                const response = await getWifiQrCode();
-                if (response.errors) throw new Error(response.errors[0].message);
-                
-                const qrCode = response.data.getWifiQrCode;
-                if (qrCode && qrCode.dataUrl) {
-                    helperContainer.innerHTML = `
-                        <div class="connectivity-helper">
-                            <div class="connectivity-helper-qr">
-                                <img src="${qrCode.dataUrl}" alt="Wi-Fi Connection QR Code">
-                            </div>
-                            <div class="connectivity-helper-text">
-                                <h5>Local Testing Guide</h5>
-                                <p><strong>Step 1:</strong> Scan the QR code on the left with your phone to connect to the local Wi-Fi network.</p>
-                                <p><strong>Step 2:</strong> Once connected, click a town marker on the map below to get a unique QR code for that location.</p>
-                            </div>
-                        </div>`;
+            async function renderWifiHelper() {
+                try {
+                    const response = await getWifiQrCode();
+                    if (response.errors) throw new Error(response.errors[0].message);
+                    
+                    const qrCode = response.data.getWifiQrCode;
+                    if (qrCode && qrCode.dataUrl) {
+                        helperContainer.innerHTML = `
+                            <div class="connectivity-helper">
+                                <div class="connectivity-helper-qr">
+                                    <img src="${qrCode.dataUrl}" alt="Wi-Fi Connection QR Code">
+                                </div>
+                                <div class="connectivity-helper-text">
+                                    <h5>Local Testing Guide</h5>
+                                    <p><strong>Step 1:</strong> Scan the QR code on the left with your phone to connect to the local Wi-Fi network.</p>
+                                    <p><strong>Step 2:</strong> Once connected, click a town marker on the map below to get a unique QR code for that location.</p>
+                                </div>
+                            </div>`;
+                    }
+                } catch (error) {
+                    console.warn("Could not render Wi-Fi helper:", error.message);
                 }
-            } catch (error) {
-                console.warn("Could not render Wi-Fi helper:", error.message);
             }
+            renderWifiHelper();
         }
-        renderWifiHelper();
 
+        // This logic now runs for BOTH maps.
         namibiaTowns.forEach(town => {
             const marker = L.marker([town.lat, town.lng]).addTo(map);
             const popupEl = document.createElement('div');
@@ -137,87 +145,8 @@ async function initializeInteractiveMap(containerId) {
             });
         });
         
-    } else {
-        try {
-            const response = await getAllLocations();
-            if (response.errors) throw new Error(response.errors[0].message);
-            const locations = response.data.getAllLocations;
-
-            locations.forEach(location => {
-                const marker = L.marker([location.coordinates.lat, location.coordinates.lng]).addTo(map);
-                const popupEl = document.createElement('div');
-                popupEl.className = 'map-popup-container';
-
-                marker.bindPopup(popupEl);
-
-                marker.on('popupopen', async () => {
-                    popupEl.innerHTML = `
-                        <h4>${location.name}</h4>
-                        <p>${location.description}</p>
-                        <div class="comments-section">
-                            <h5>Historical Facts & Comments</h5>
-                            <div class="comments-list" id="comments-for-${location.id}"><p>Loading facts...</p></div>
-                            <form class="comment-form" data-location-id="${location.id}">
-                                <textarea name="comment" placeholder="Add a verified Namibian historical fact..." required></textarea>
-                                <button type="submit">Submit</button>
-                                <small class="form-status"></small>
-                            </form>
-                        </div>
-                    `;
-                    await renderComments(location.id);
-                    attachFormListener(popupEl.querySelector('.comment-form'));
-                });
-            });
-
-        } catch (error) {
-            console.error("Failed to load map locations:", error);
-            mapContainer.innerHTML = `<p style="text-align: center; padding: 20px;">Could not load map locations. Please try again later.</p>`;
-        }
     }
-
-    async function renderComments(locationId) {
-        const commentsList = document.getElementById(`comments-for-${locationId}`);
-        try {
-            const response = await getCommentsForLocation(locationId);
-            if (response.errors) throw new Error(response.errors[0].message);
-            const comments = response.data.getComments;
-            if (comments.length > 0) {
-                commentsList.innerHTML = comments.map(comment => `
-                    <div class="comment-item">
-                        <p class="comment-text">${comment.text}</p>
-                        <span class="comment-author">- ${comment.author.username}</span>
-                    </div>
-                `).join('');
-            } else {
-                commentsList.innerHTML = '<p>No facts have been added for this location yet.</p>';
-            }
-        } catch (error) {
-            commentsList.innerHTML = '<p>Could not load facts.</p>';
-        }
-    }
-
-    function attachFormListener(form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const locationId = form.dataset.locationId;
-            const text = form.querySelector('textarea').value;
-            const statusEl = form.querySelector('.form-status');
-
-            statusEl.textContent = 'Verifying fact with AI...';
-            try {
-                const response = await addComment(locationId, text);
-                if (response.errors) throw new Error(response.errors[0].message);
-                
-                statusEl.textContent = 'Fact verified and added!';
-                statusEl.style.color = 'green';
-                form.querySelector('textarea').value = '';
-                await renderComments(locationId);
-            } catch (error) {
-                statusEl.textContent = `Error: ${error.message}`;
-                statusEl.style.color = 'red';
-            }
-        });
-    }
+    // The old 'else' block that showed user-submitted locations has been removed.
 
     L.control.scale({ imperial: false }).addTo(map);
     mapContainer.dataset.initialized = 'true';
