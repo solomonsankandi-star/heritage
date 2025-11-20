@@ -1,0 +1,49 @@
+<!-- In: views/pages/towns/tsumeb.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heritage Hub - Tsumeb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body.town-page .header { position: fixed; background-color: var(--color-primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        body.town-page .logo, body.town-page .nav-links a, body.town-page .hamburger-menu span { color: var(--color-light-text); }
+        .town-comments-section { text-align: left; max-width: 800px; margin: 4rem auto 0; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body class="town-page">
+    
+    <%- include('../../partials/_header', { isTownPage: true }) %>
+
+    <main>
+        <section style="padding-top: 150px; text-align: center;">
+            <div class="container">
+                <h2 style="margin-top: 0;">Welcome to</h2>
+                <h1 style="color: var(--color-dark-text); font-size: clamp(3rem, 10vw, 8rem); margin-top: -1rem;">Tsumeb</h1>
+
+                <div class="town-comments-section">
+                    <h3>Verified Historical Facts</h3>
+                    <div id="comments-list" class="comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 2rem;"></div>
+
+                    <h4>Add a Fact</h4>
+                    <form id="comment-form" class="comment-form" data-town-name="Tsumeb">
+                        <textarea name="comment" placeholder="Add a verified historical fact about Tsumeb..." required></textarea>
+                        <button type="submit">Submit Fact</button>
+                        <small id="form-status" class="form-status"></small>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('../../partials/_footer') %>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/town-page.js"></script>
+</body>
+</html>
