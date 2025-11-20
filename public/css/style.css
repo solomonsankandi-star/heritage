@@ -78,14 +78,19 @@ body:not(.on-home-page) .nav-links a.active { text-decoration: underline; }
   .footer .container { flex-direction: row; justify-content: space-between; } 
   #memorials .feature:nth-child(odd) .feature-image { order: 1; }
 
-  /* --- THE FIX IS HERE --- */
   /* This rule targets the h2 on specific pages and reduces the top margin */
   #gallery h2,
   #memorials h2,
   #calendar h2,
   #map h2.map-header,
   #about h2 {
-      margin-top: 15%; /* Reduced by 50% from the original 30% */
+      margin-top: 15%;
+  }
+
+  /* --- THE FIX IS HERE --- */
+  /* This new, more specific rule targets ONLY the h2 elements in sections on the home page */
+  body.on-home-page section h2 {
+      margin-top: 10.5%; /* 30% - (30% * 0.65) = 10.5% */
   }
 }
 
