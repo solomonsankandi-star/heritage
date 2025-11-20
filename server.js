@@ -31,6 +31,8 @@ app.post('/upload', upload.single('eventImage'), (req, res) => {
 });
 
 
+// In: server.js
+
 // --- Static routes, one for each town page ---
 app.get('/town/Windhoek', (req, res) => { res.render('pages/towns/windhoek'); });
 app.get('/town/Swakopmund', (req, res) => { res.render('pages/towns/swakopmund'); });
